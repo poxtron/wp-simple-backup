@@ -4,11 +4,11 @@
  * Description: Create and Download a zip file containing database,files and migration information of any wordpress instalation. To remove the backup remove the plugin
  * Author: Miguel Sirvent
  * Author URI: https://www.freelancer.com/u/miguelsirvent.html	
- * Version: 1.0
+ * Version: 1.1
  */
  
 add_filter( 'plugin_action_links_' . plugin_basename(__FILE__), array( "WP_Simple_Backup", 'add_action_link' ), 10, 2 );
-add_action("admin-init",array( "WP_Simple_Backup", 'init' ));
+add_action("init",array( "WP_Simple_Backup", 'init' ));
 class WP_Simple_Backup{
 	
 	static $slug = "/wp-simple-backup/";
@@ -35,7 +35,7 @@ class WP_Simple_Backup{
 			$down_link = '<a href="'.WP_PLUGIN_URL.self::$slug.self::getname().'" class="button button-primary">Download</a>';
 			array_unshift( $links, $down_link );
 		} else {
-			$get_link = '<a href="'.get_admin_url().'plugins.php?wpsback=backup" class="button button-primary">Backup</a>';
+			$get_link = '<a href="'.get_admin_url().'plugins.php?wpsback=backup" class="button button-primary">Backupi</a>';
 			array_unshift( $links, $get_link );						
 		}
 		return $links;
@@ -55,22 +55,25 @@ class WP_Simple_Backup{
 		$name = self::getname();
         $dest = $folder.$name;
         $zip = new ZipArchive;
+		//echo $dest;
         $res = $zip->open($dest, ZipArchive::CREATE);
         if($res !== TRUE) {
+        	//echo $dest;
             return FALSE;
         }
 		self::backup_file($zip);
-		self::backup_db($zip,$name);
+		$dbtmp = self::backup_db($zip);
 		$fname = tempnam(sys_get_temp_dir(),'');
 		global $wpdb;
 		file_put_contents($fname, $bktype."\n", FILE_APPEND);
 		file_put_contents($fname, $site_u."\n", FILE_APPEND);
 		file_put_contents($fname, $wpdb->prefix."\n", FILE_APPEND);
-		$zip->addFile($fname, self::$db_file_name);
+		$zip->addFile($fname, self::$data_file_name);
         $zip->close();
 		unlink($fname);
+		unlink($dbtmp);
 		ini_set('max_execution_time', (int)$exe_time);
-        return array('dest'=>$dest,'data'=>$data);
+        return;
     }
     /**
 	 * Saves all files of the root folder
@@ -99,16 +102,13 @@ class WP_Simple_Backup{
 	 * @param object Zip instance.
 	 */
     static function backup_db(&$zip){
-        if(empty($zip)) {
-            return;
-        }
 		$fname = tempnam(sys_get_temp_dir(), 'wpbackup');
 		if(self::is_unix())
 			exec("mysqldump -u ".DB_USER." --password=".DB_PASSWORD." -h ".DB_HOST." ".DB_NAME." > ".$fname);
 		else
 			exec("mysqldump.exe –e –u".DB_USER." -p".DB_PASSWORD." -h ".DB_HOST." ".DB_NAME." > ".$fname);
 		$zip->addFile($fname, self::$db_file_name);
-		unlink($fname);
+		return $fname;
     }	
 	/*
 	 * Name of the zip file
@@ -118,7 +118,7 @@ class WP_Simple_Backup{
 	static function getname(){
 		$site_u = is_multisite() ? site_url() : get_bloginfo('wpurl');
 		$site = trim($site_u,"/");
-		str_replace(array("http://","https://","/"), array("","","-"), $site);
+		$site = str_replace(array("http://","https://","/"), array("","","-"), $site);
 		return $site.".zip";
 	}
 	/*
