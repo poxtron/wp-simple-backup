@@ -1,7 +1,7 @@
 <?php
 /*
  * Plugin Name: WP Simple Backup
- * Description: Create and Download a zip file containing database,files and migration information of any wordpress instalation. To remove the backup remove the plugin
+ * Description: Create and Download a zip file containing database,files and migration information of any wordpress instalation. To remove the backup deactivate the plugin
  * Author: Miguel Sirvent
  * Author URI: https://www.freelancer.com/u/miguelsirvent.html	
  * Version: 1.2
@@ -9,6 +9,7 @@
  
 add_filter( 'plugin_action_links_' . plugin_basename(__FILE__), array( "WP_Simple_Backup", 'add_action_link' ), 10, 2 );
 add_action("init",array( "WP_Simple_Backup", 'init' ));
+register_deactivation_hook( __FILE__ , array( "WP_Simple_Backup", 'deactivation' ));
 class WP_Simple_Backup{
 	
 	static $slug = "/wp-simple-backup/";
@@ -133,7 +134,19 @@ class WP_Simple_Backup{
 		if (DIRECTORY_SEPARATOR == '\\') {//for windows based servers
 		    return false;
 		}			
-	}	
+	}
+	/**
+	 * Delete backup on plugin deactivation
+	 */	
+	static function deactivation(){
+        if ( ! current_user_can( 'activate_plugins' ) )
+            return;
+        $plugin = isset( $_REQUEST['plugin'] ) ? $_REQUEST['plugin'] : '';
+        check_admin_referer( "deactivate-plugin_{$plugin}" );		
+		if(file_exists(WP_PLUGIN_DIR.self::$slug.self::getname())) {
+			unlink(WP_PLUGIN_DIR.self::$slug.self::getname());
+		}		
+	}
 }
  
  
