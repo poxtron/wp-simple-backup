@@ -20,7 +20,7 @@ class WP_Simple_Backup{
 	static function init() {
 		global $pagenow;
 		if($pagenow == "plugins.php"){
-			if(isset($_GET['wpsback'],$_GET['_wpnonce']) && $_GET['wpsback'] == 'backup' && wp_verify_nonce( $nonce, 'wpsback' )){
+			if(isset($_GET['wpsback']) && $_GET['wpsback'] == 'backup'){
 				self::backup_data();
 			}
 		}
@@ -35,8 +35,7 @@ class WP_Simple_Backup{
 			$down_link = '<a href="'.WP_PLUGIN_URL.self::$slug.self::getname().'" class="button button-primary">Download</a>';
 			array_unshift( $links, $down_link );
 		} else {
-			$nonce = wp_create_nonce( 'wpsback' );
-			$get_link = '<a href="'.get_admin_url().'plugins.php?wpsback=backup&_wpnonce='.$nonce.'" class="button button-primary">Backup</a>';
+			$get_link = '<a href="'.get_admin_url().'plugins.php?wpsback=backup" class="button button-primary">Backup</a>';
 			array_unshift( $links, $get_link );						
 		}
 		return $links;
