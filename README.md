@@ -1,7 +1,7 @@
 Installation
 ================
 
-Upload the plugin to your wordpres
+Upload the plugin to your wordpres:
 
 ```
 wp-content
@@ -10,9 +10,11 @@ wp-content
       -> wp-simple-backup.php
 ```
 
-Activate the Plugin 
+Activate the Plugin. 
 
-Next to the plugin description you will see a backup button click, page will regfresh and the button will now say download.
+Click Backup button next to the plugin description.
+
+Click Download button next to the plugin description.
 
 The backup deletes on plugin deactivation.
 
