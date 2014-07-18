@@ -4,7 +4,7 @@
  * Description: Create and Download a zip file containing database,files and migration information of any wordpress instalation. To remove the backup remove the plugin
  * Author: Miguel Sirvent
  * Author URI: https://www.freelancer.com/u/miguelsirvent.html	
- * Version: 1.1
+ * Version: 1.2
  */
  
 add_filter( 'plugin_action_links_' . plugin_basename(__FILE__), array( "WP_Simple_Backup", 'add_action_link' ), 10, 2 );
@@ -20,7 +20,8 @@ class WP_Simple_Backup{
 	static function init() {
 		global $pagenow;
 		if($pagenow == "plugins.php"){
-			if(isset($_GET['wpsback']) && $_GET['wpsback'] == 'backup'){
+			
+			if(isset($_GET['wpsback'],$_GET['_wpnonce']) && $_GET['wpsback'] == 'backup' && wp_verify_nonce( $_GET['_wpnonce'], 'wpsback' )){
 				self::backup_data();
 			}
 		}
@@ -35,7 +36,8 @@ class WP_Simple_Backup{
 			$down_link = '<a href="'.WP_PLUGIN_URL.self::$slug.self::getname().'" class="button button-primary">Download</a>';
 			array_unshift( $links, $down_link );
 		} else {
-			$get_link = '<a href="'.get_admin_url().'plugins.php?wpsback=backup" class="button button-primary">Backupi</a>';
+			$nonce = wp_create_nonce( 'wpsback' );
+			$get_link = '<a href="'.get_admin_url().'plugins.php?wpsback=backup&_wpnonce='.$nonce.'" class="button button-primary">Backup</a>';
 			array_unshift( $links, $get_link );						
 		}
 		return $links;
