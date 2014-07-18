@@ -53,7 +53,7 @@ class WP_Simple_Backup{
     	set_time_limit(0);
         $folder = WP_PLUGIN_DIR.self::$slug;
 		$site_u = is_multisite() ? site_url() : get_bloginfo('wpurl');
-		$name = self::getname($site_u);
+		$name = self::getname();
         $dest = $folder.$name;
         $zip = new ZipArchive;
         $res = $zip->open($dest, ZipArchive::CREATE);
@@ -109,14 +109,15 @@ class WP_Simple_Backup{
 		else
 			exec("mysqldump.exe –e –u".DB_USER." -p".DB_PASSWORD." -h ".DB_HOST." ".DB_NAME." > ".$fname);
 		$zip->addFile($fname, self::$db_file_name);
-		//unlink($fname);
+		unlink($fname);
     }	
 	/*
 	 * Name of the zip file
 	 * if wp site is http://www.example.com/wp/
 	 * file will be named www.example.com-wp.zip
 	 */  
-	static function getname($site_u){
+	static function getname(){
+		$site_u = is_multisite() ? site_url() : get_bloginfo('wpurl');
 		$site = trim($site_u,"/");
 		str_replace(array("http://","https://","/"), array("","","-"), $site);
 		return $site.".zip";
