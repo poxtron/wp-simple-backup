@@ -20,7 +20,7 @@ class WP_Simple_Backup{
 	 */
 	static function init() {
 		global $pagenow;
-		if($pagenow == "plugins.php"){
+		if($pagenow == "plugins.php" && current_user_can('manage_options')){
 			
 			if(isset($_GET['wpsback'],$_GET['_wpnonce']) && $_GET['wpsback'] == 'backup' && wp_verify_nonce( $_GET['_wpnonce'], 'wpsback' )){
 				self::backup_data();
@@ -93,7 +93,7 @@ class WP_Simple_Backup{
             }
 			$local = str_replace($root, '', $dir).$file;
             if(is_file($dir.$file)) {
-                $zip -> addFile($dir.$file, $local);
+                $zip->addFile($dir.$file, $local);
             } else {
                 self::backup_file($zip, $root, $dir.$file.'/'); 
             } 
